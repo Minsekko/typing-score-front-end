@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./TypingTest.css";
-function TypingTest({ setViewName }) {
+function TypingTest({ setViewName, setTypingScore }) {
   const [targetText, setTargetText] = useState("Download the React DevTools.");
   const [elapsed, setElapsed] = useState(0);
   const [started, setStarted] = useState(false);
@@ -64,6 +64,26 @@ function TypingTest({ setViewName }) {
     setAccuracy((correct / (correct + wrong)) * 100);
   }
 
+  //제출하기 버튼클릭 이벤트 처리용
+  function registerClickHandle(evt) {
+    fetch("http://192.168.10.40:8080/api/typingScore/create", {
+      method: "post",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: "accuracy=" + accuracy + "&elapsed=" + elapsed / 10,
+    })
+      .then(function (response) {
+        console.log(response.status);
+        return response.json();
+      })
+      .then(function (json) {
+        console.log(json);
+        setTypingScore(json);
+        setViewName("TypingResult");
+      });
+  }
+
   function contextMenuHandle(evt) {
     evt.preventDefault();
   }
@@ -109,7 +129,9 @@ function TypingTest({ setViewName }) {
       )}
       {!started && elapsed !== 0 && (
         <>
-          <button className="typing-restart-btn">제출하기</button>
+          <button className="typing-restart-btn" onClick={registerClickHandle}>
+            제출하기
+          </button>
           <button className="typing-restart-btn">다시하기</button>
         </>
       )}
